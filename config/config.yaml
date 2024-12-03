@@ -1,0 +1,21 @@
+server:
+  env: "dev"
+  host: ""
+  port: 8020
+
+redis:
+  address: "localhost:6379"
+  password: ""
+  db: 0
+
+database:
+  driver: ""
+  host: "localhost"
+  port: "27017"
+  user: ""
+  password: ""
+  db_name: "simplepos"
+
+auth-token:
+  duration: 3600
+  secretkey: "anysecret"
