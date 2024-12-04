@@ -60,6 +60,9 @@ func (s *UserService) GetAllUser(ctx context.Context) *[]model.User {
 
 // CreateUser calls the repository to create a new user
 func (s *UserService) CreateUser(ctx context.Context, user model.User) (*model.User, error) {
+	if !util.IsMemberofStringSlice(s.Cfg.Roles, user.Role) {
+		return nil, errors.New("user role is invalid")
+	}
 	hashedPassword, _ := util.HashPassword(user.Password)
 	user.Password = hashedPassword
 	return s.Repo.Create(ctx, user)
@@ -72,6 +75,9 @@ func (s *UserService) GetUserByID(ctx context.Context, id string) (*model.User, 
 
 // UpdateUser calls the repository to update a user's data
 func (s *UserService) UpdateUser(ctx context.Context, id string, user model.User) (*model.User, error) {
+	if !util.IsMemberofStringSlice(s.Cfg.Roles, user.Role) {
+		return nil, errors.New("user role is invalid")
+	}
 	hashedPassword, _ := util.HashPassword(user.Password)
 	user.Password = hashedPassword
 	return s.Repo.Update(ctx, id, user)

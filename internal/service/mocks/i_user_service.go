@@ -112,6 +112,34 @@ func (_m *IUserService) GetUserByID(ctx context.Context, id string) (*model.User
 	return r0, r1
 }
 
+// Login provides a mock function with given fields: ctx, user
+func (_m *IUserService) Login(ctx context.Context, user model.User) (string, error) {
+	ret := _m.Called(ctx, user)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Login")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, model.User) (string, error)); ok {
+		return rf(ctx, user)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, model.User) string); ok {
+		r0 = rf(ctx, user)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, model.User) error); ok {
+		r1 = rf(ctx, user)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateUser provides a mock function with given fields: ctx, id, user
 func (_m *IUserService) UpdateUser(ctx context.Context, id string, user model.User) (*model.User, error) {
 	ret := _m.Called(ctx, id, user)

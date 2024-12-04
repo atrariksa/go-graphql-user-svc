@@ -2,23 +2,27 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go-graphql-user-svc/internal/model"
 	"go-graphql-user-svc/internal/service"
 	"log"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/graphql-go/graphql"
 )
 
 type UserHandler struct {
 	Service service.IUserService
+	cv      service.IClaimsValidator
 }
 
 // NewUserHandler creates a new handler for user-related routes
-func NewUserHandler(service service.IUserService) *UserHandler {
+func NewUserHandler(service service.IUserService, cv service.IClaimsValidator) *UserHandler {
 	return &UserHandler{
 		Service: service,
+		cv:      cv,
 	}
 }
 
@@ -35,6 +39,8 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 
 // ServeGraphQL handles GraphQL requests
 func (h *UserHandler) ServeGraphQL(w http.ResponseWriter, r *http.Request) {
+
+	rCtx := r.Context()
 
 	var params map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -56,6 +62,10 @@ func (h *UserHandler) ServeGraphQL(w http.ResponseWriter, r *http.Request) {
 		"users": &graphql.Field{
 			Type: graphql.NewList(userType),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				p.Context = rCtx
+				if !h.cv.IsAdmin(rCtx.Value("claims").(jwt.MapClaims)) {
+					return nil, errors.New("you cannot access this resource")
+				}
 				return h.Service.GetAllUser(p.Context), nil
 			},
 		},
@@ -71,6 +81,10 @@ func (h *UserHandler) ServeGraphQL(w http.ResponseWriter, r *http.Request) {
 				"password": &graphql.ArgumentConfig{Type: graphql.String},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				p.Context = rCtx
+				if !h.cv.IsAdmin(rCtx.Value("claims").(jwt.MapClaims)) {
+					return nil, errors.New("you cannot access this resource")
+				}
 				name := p.Args["name"].(string)
 				email := p.Args["email"].(string)
 				role := p.Args["role"].(string)
@@ -90,6 +104,10 @@ func (h *UserHandler) ServeGraphQL(w http.ResponseWriter, r *http.Request) {
 				"password": &graphql.ArgumentConfig{Type: graphql.String},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				p.Context = rCtx
+				if !h.cv.IsAdmin(rCtx.Value("claims").(jwt.MapClaims)) {
+					return nil, errors.New("you cannot access this resource")
+				}
 				id := p.Args["id"].(string)
 				name := p.Args["name"].(string)
 				email := p.Args["email"].(string)
@@ -106,6 +124,10 @@ func (h *UserHandler) ServeGraphQL(w http.ResponseWriter, r *http.Request) {
 				"id": &graphql.ArgumentConfig{Type: graphql.String},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				p.Context = rCtx
+				if !h.cv.IsAdmin(rCtx.Value("claims").(jwt.MapClaims)) {
+					return nil, errors.New("you cannot access this resource")
+				}
 				id := p.Args["id"].(string)
 				err := h.Service.DeleteUser(p.Context, id)
 				if err != nil {
